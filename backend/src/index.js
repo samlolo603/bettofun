@@ -30,25 +30,21 @@ app.use('/api/users', userRoutes);
 
 app.use(errorHandler);
 
-let isConnected = false;
+const PORT = process.env.PORT || 10000;
 
-async function connectDB() {
-  if (!isConnected && process.env.MONGO_URI) {
-    try {
+async function start() {
+  try {
+    if (process.env.MONGO_URI) {
       await mongoose.connect(process.env.MONGO_URI);
-      isConnected = true;
-    } catch (err) {
-      console.error('MongoDB error:', err.message);
+      console.log('Connected to MongoDB');
+    } else {
+      console.warn('MONGO_URI not set, running without database');
     }
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  } catch (err) {
+    console.error('Startup error:', err.message);
+    process.exit(1);
   }
 }
 
-app.use(async (req, res, next) => {
-  await connectDB();
-  next();
-});
-
-module.exports = app;
-module.exports.handler = (req, res) => {
-  app(req, res);
-};
+start();
