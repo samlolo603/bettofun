@@ -17,11 +17,9 @@ app.use(express.json());
 app.use(helmet());
 app.use(cors({ origin: process.env.FRONTEND_URL || '*' }));
 
-// Basic rate limiter
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200 });
 app.use(limiter);
 
-// Stricter rate limiter for auth endpoints (brute force protection)
 const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 15, message: 'Too many attempts, please try again later' });
 app.use('/api/auth', authLimiter);
 
@@ -32,17 +30,25 @@ app.use('/api/users', userRoutes);
 
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 4000;
+let isConnected = false;
 
-async function start() {
-  try {
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log('Connected to MongoDB');
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-  } catch (err) {
-    console.error('Startup error', err);
-    process.exit(1);
+async function connectDB() {
+  if (!isConnected && process.env.MONGO_URI) {
+    try {
+      await mongoose.connect(process.env.MONGO_URI);
+      isConnected = true;
+    } catch (err) {
+      console.error('MongoDB error:', err.message);
+    }
   }
 }
 
-start();
+app.use(async (req, res, next) => {
+  await connectDB();
+  next();
+});
+
+module.exports = app;
+module.exports.handler = (req, res) => {
+  app(req, res);
+};
