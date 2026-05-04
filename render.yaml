@@ -1,6 +1,7 @@
 services:
   - type: web
     name: easygame-backend
+    rootDir: backend
     env: node
     buildCommand: npm install
     startCommand: node src/index.js
@@ -10,7 +11,7 @@ services:
       - key: MONGO_URI
         value: mongodb+srv://montropz16_db_user:AGn4A4AcUGqUWdJh@cluster0.8irwfbv.mongodb.net/easygame
       - key: JWT_SECRET
-        value: your_strong_jwt_secret_here_change_me
+        value: your_secure_jwt_secret_123456789
       - key: FRONTEND_URL
         value: https://bettofun.vercel.app
       - key: PORT
