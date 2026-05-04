@@ -10,6 +10,8 @@ html, body, #root {
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+  min-height: 100vh;
 }
 
 ::-webkit-scrollbar {

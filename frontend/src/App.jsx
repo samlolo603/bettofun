@@ -13,6 +13,21 @@ export default function App(){
   const [user, setUser] = useState(null)
 
   useEffect(()=>{
+    const urlParams = new URLSearchParams(window.location.search)
+    const token = urlParams.get('token')
+    const userParam = urlParams.get('user')
+    
+    if (token && userParam) {
+      localStorage.setItem('eg_token', token)
+      localStorage.setItem('eg_user', userParam)
+      try {
+        setUser(JSON.parse(userParam))
+      } catch(e) {}
+      window.history.replaceState({}, document.title, '/')
+    }
+  },[])
+
+  useEffect(()=>{
     const fetchOdds = async () => {
       try {
         const r = await axios.get(`${API}/odds`)
@@ -25,15 +40,23 @@ export default function App(){
     }
     fetchOdds()
     
-    const saved = localStorage.getItem('eg_token')
-    if(saved){
-      // optionally fetch user profile
+    const savedUser = localStorage.getItem('eg_user')
+    if(savedUser){
+      try {
+        setUser(JSON.parse(savedUser))
+      } catch(e) {
+        localStorage.removeItem('eg_user')
+      }
     }
   },[])
 
+  function handleLogin(userData) {
+    setUser(userData)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-950 via-primary-900 to-primary-950">
-      <Navbar user={user} />
+      <Navbar user={user} onLogin={handleLogin} />
       
       <main className="max-w-6xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -42,7 +65,7 @@ export default function App(){
             <BettingForm api={API} odds={odds} />
           </div>
           <aside className="lg:col-span-1">
-            <UserPanel user={user} />
+            <UserPanel user={user} onLogin={handleLogin} />
           </aside>
         </div>
       </main>
